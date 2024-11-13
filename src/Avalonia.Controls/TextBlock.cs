@@ -128,6 +128,15 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="CharacterCasing"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<CharacterCasing> CharacterCasingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, CharacterCasing>(
+                nameof(CharacterCasing),
+                defaultValue: CharacterCasing.Normal,
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="TextWrapping"/> property.
         /// </summary>
         public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
@@ -141,6 +150,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<TextBlock, Control, TextTrimming>(nameof(TextTrimming),
                 defaultValue: TextTrimming.None,
                 inherits: true);
+
 
         /// <summary>
         /// Defines the <see cref="TextDecorations"/> property.
@@ -178,11 +188,7 @@ namespace Avalonia.Controls
 
         public TextBlock()
         {
-            Inlines = new InlineCollection
-            {
-                LogicalChildren = LogicalChildren,
-                InlineHost = this
-            };
+            Inlines = new InlineCollection { LogicalChildren = LogicalChildren, InlineHost = this };
         }
 
         /// <summary>
@@ -332,6 +338,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TextAlignmentProperty);
             set => SetValue(TextAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the character casing.
+        /// </summary>
+        public CharacterCasing CharacterCasing
+        {
+            get => GetValue(CharacterCasingProperty);
+            set => SetValue(CharacterCasingProperty, value);
         }
 
         /// <summary>
@@ -625,6 +640,7 @@ namespace Avalonia.Controls
         }
 
         private bool _clearTextInternal;
+
         internal void ClearTextInternal()
         {
             _clearTextInternal = true;
@@ -653,11 +669,9 @@ namespace Avalonia.Controls
                 TextDecorations,
                 Foreground);
 
-            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
-            {
-                LineSpacing = LineSpacing
-            };
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection,
+                IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing) { LineSpacing = LineSpacing };
 
             ITextSource textSource;
 
@@ -667,7 +681,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                textSource = new SimpleTextSource(text ?? "", defaultProperties);
+                textSource = new SimpleTextSource(AdjustCasing(text, CharacterCasing) ?? "", defaultProperties);
             }
 
             return new TextLayout(
@@ -713,7 +727,7 @@ namespace Avalonia.Controls
                 //Force arrange so text will be properly alligned.
                 InvalidateArrange();
             }
-           
+
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -731,7 +745,8 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
+            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace +
+                        textLayout.OverhangTrailing;
 
             var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);
 
@@ -777,7 +792,7 @@ namespace Avalonia.Controls
 
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
-                                    new Size(control.DesiredSize.Width, textLine.Height)));
+                                        new Size(control.DesiredSize.Width, textLine.Height)));
                             }
 
                             currentX += drawable.Size.Width;
@@ -831,24 +846,33 @@ namespace Avalonia.Controls
                 case nameof(TextDecorations):
                 case nameof(FontFeatures):
                 case nameof(Foreground):
-                    {
-                        InvalidateTextLayout();
-                        break;
-                    }
+                {
+                    InvalidateTextLayout();
+                    break;
+                }
                 case nameof(Inlines):
-                    {
-                        OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
-                        InvalidateTextLayout();
-                        break;
-                    }
+                {
+                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                    InvalidateTextLayout();
+                    break;
+                }
+                case nameof(CharacterCasing):
+                {
+                    var s = AdjustCasing(Text, CharacterCasing);
+                    Console.WriteLine(s);
+                    break;
+                }
             }
         }
+        
+        
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
 
-        private static bool IsValidLineSpacing(double lineSpacing) => !double.IsNaN(lineSpacing) && !double.IsInfinity(lineSpacing);
+        private static bool IsValidLineSpacing(double lineSpacing) =>
+            !double.IsNaN(lineSpacing) && !double.IsInfinity(lineSpacing);
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
@@ -919,6 +943,20 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Adjust the text casing.
+        /// </summary>
+        /// <param name="text">The text to adjust.</param>
+        /// <param name="characterCasing">The character casing we want.</param>
+        /// <returns></returns>
+        private static string? AdjustCasing(string? text, CharacterCasing characterCasing) => characterCasing switch
+        {
+            CharacterCasing.Lower => text?.ToLower(System.Globalization.CultureInfo.CurrentCulture),
+            CharacterCasing.Upper => text?.ToUpper(System.Globalization.CultureInfo.CurrentCulture),
+            CharacterCasing.Normal => text,
+            _ => text
+        };
+
 #pragma warning disable CA1815
         protected readonly struct InlinesTextSource : ITextSource
 #pragma warning restore CA1815
@@ -926,7 +964,8 @@ namespace Avalonia.Controls
             private readonly IReadOnlyList<TextRun> _textRuns;
             private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
-            public InlinesTextSource(IReadOnlyList<TextRun> textRuns, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier = null)
+            public InlinesTextSource(IReadOnlyList<TextRun> textRuns,
+                IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier = null)
             {
                 _textRuns = textRuns;
                 _textModifier = textModifier;
@@ -956,7 +995,8 @@ namespace Avalonia.Controls
                     {
                         var skip = Math.Max(0, textSourceIndex - currentPosition);
 
-                        var textStyleRun = FormattedTextSource.CreateTextStyleRun(textRun.Text.Slice(skip).Span, textSourceIndex, textCharacters.Properties, _textModifier);
+                        var textStyleRun = FormattedTextSource.CreateTextStyleRun(textRun.Text.Slice(skip).Span,
+                            textSourceIndex, textCharacters.Properties, _textModifier);
 
                         return new TextCharacters(textRun.Text.Slice(skip, textStyleRun.Length), textStyleRun.Value);
                     }
