@@ -830,6 +830,8 @@ namespace Avalonia.Controls
                 case nameof(FontStyle):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
+                    
+                case nameof(CharacterCasing):
 
                 case nameof(TextWrapping):
                 case nameof(TextTrimming):
@@ -854,12 +856,6 @@ namespace Avalonia.Controls
                 {
                     OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
                     InvalidateTextLayout();
-                    break;
-                }
-                case nameof(CharacterCasing):
-                {
-                    var s = AdjustCasing(Text, CharacterCasing);
-                    Console.WriteLine(s);
                     break;
                 }
             }

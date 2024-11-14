@@ -1,7 +1,7 @@
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Defines how characters are converted.
+    /// Defines how characters are converted for display purposes.
     /// </summary>
     public enum CharacterCasing
     {
