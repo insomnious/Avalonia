@@ -172,7 +172,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint = Size.Infinity;
+        protected Size _constraint = new(double.NaN, double.NaN);
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -380,6 +380,13 @@ namespace Avalonia.Controls
         protected override bool BypassFlowDirectionPolicies => true;
 
         internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
+
+        private protected Size GetMaxSizeFromConstraint()
+        {
+            var maxWidth = double.IsNaN(_constraint.Width) ? 0.0 : _constraint.Width;
+            var maxHeight = double.IsNaN(_constraint.Height) ? 0.0 : _constraint.Height;
+            return new Size(maxWidth, maxHeight);
+        }
 
         /// <summary>
         /// The BaselineOffset property provides an adjustment to baseline offset
@@ -684,12 +691,14 @@ namespace Avalonia.Controls
                 textSource = new SimpleTextSource(AdjustCasing(text, CharacterCasing) ?? "", defaultProperties);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
