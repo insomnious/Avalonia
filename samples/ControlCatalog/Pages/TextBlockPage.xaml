@@ -2,15 +2,6 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel>
-    <TextBlock FontSize="50" Classes="casing">SiMon</TextBlock>
-    <TextBlock FontSize="50" Text="sImOn" Background="Brown" >
-      <TextBlock.Styles>
-        <Style Selector="TextBlock">
-          <Setter Property="Foreground" Value="Blue" />
-          <Setter Property="CharacterCasing" Value="Normal" />
-        </Style>
-      </TextBlock.Styles>
-    </TextBlock>
     <TextBlock Classes="h2">A control that can display text</TextBlock>
     <WrapPanel MaxWidth="680"
                Margin="-10,0"
@@ -39,7 +30,9 @@
       </Border>
       <Border>
         <StackPanel Spacing="8">
-          <TextBlock Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." TextWrapping="Wrap" />
+          <TextBlock
+            Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est."
+            TextWrapping="Wrap" />
         </StackPanel>
       </Border>
       <Border>
@@ -134,15 +127,23 @@
           <Span FontStyle="Italic">Span</Span> elements,
           <Span Foreground="Blue">
             using a <Bold>variety</Bold> of <Italic>styles</Italic>
-          </Span>.
+          </Span>
+          .
         </SelectableTextBlock>
       </Border>
       <Border>
         <TextBlock FontFamily="Times New Roman">
-          <Run Text="ABC" FontFeatures="+c2sc, +smcp"/>
-          <Run Text="DEF"/>
-          <Run Text="0123" FontFeatures="frac"/>
-        </TextBlock> 
+          <Run Text="ABC" FontFeatures="+c2sc, +smcp" />
+          <Run Text="DEF" />
+          <Run Text="0123" FontFeatures="frac" />
+        </TextBlock>
+      </Border>
+      <Border>
+        <StackPanel>
+          <TextBlock CharacterCasing="Normal">Normal CharacterCasing</TextBlock>
+          <TextBlock CharacterCasing="Upper">Upper CharacterCasing</TextBlock>
+          <TextBlock CharacterCasing="Lower">Lower CharacterCasing</TextBlock>
+        </StackPanel>
       </Border>
     </WrapPanel>
   </StackPanel>
